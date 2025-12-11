@@ -1,62 +1,67 @@
-# Multi-Tenant Organization Management Backend
 
-This project implements an organization management system using FastAPI and MongoDB.  
-It follows a multi-tenant architecture where each organization receives its own isolated collection, while global metadata is stored in a master database.  
-The application supports organization creation, updates, deletion, and secure admin authentication.
+# ✨ **Multi-Tenant Organization Management Backend**
 
----
-
-# Features
-
-### Create Organization (`POST /org/create`)
-- Validates that the organization name is unique  
-- Creates a dedicated MongoDB collection: `org_<organization_name>`  
-- Creates an admin user with a hashed password  
-- Stores organization details in the master database  
-
-### Admin Login (`POST /admin/login`)
-- Authenticates admin credentials  
-- Returns a JWT token with admin and organization details  
-
-### Get Organization (`GET /org/get`)
-Returns organization metadata stored in the master database.
-
-### Update Organization (`PUT /org/update`)
-- Updates organization name  
-- Migrates existing tenant data to a new collection if renamed  
-- Updates admin details  
-
-### Delete Organization (`DELETE /org/delete`)
-- Requires JWT authentication  
-- Only the respective admin can delete their organization  
-- Removes organization collection, admin entry, and metadata from the master database  
+This project implements a multi-tenant organization management system using **FastAPI** and **MongoDB**.
+Each organization is assigned its own isolated collection, while global metadata and admin details are stored in a master database.
+The system includes endpoints for creating, updating, deleting organizations and managing admin authentication.
 
 ---
 
-# High-Level Architecture Diagram
+# 🚀 **Features**
+
+### 🔹 Create Organization (`POST /org/create`)
+
+* Ensures organization name is unique
+* Creates MongoDB collection: `org_<organization_name>`
+* Registers admin user with hashed password
+* Saves metadata in master database
+
+### 🔹 Admin Login (`POST /admin/login`)
+
+* Validates admin credentials
+* Returns JWT token with admin and tenant details
+
+### 🔹 Get Organization (`GET /org/get`)
+
+Fetches organization metadata from the master database.
+
+### 🔹 Update Organization (`PUT /org/update`)
+
+* Updates organization name
+* Migrates data to a new collection if renamed
+* Updates admin email or password
+
+### 🔹 Delete Organization (`DELETE /org/delete`)
+
+* Allowed only for authenticated admin
+* Deletes collection, metadata, and admin entry
+
+---
+
+# 🏗️ **High-Level Architecture Diagram**
 
 ![Architecture Diagram](architecture_diagram.png)
 
 ---
 
-# Architecture Overview
+# 🧱 **Architecture Overview**
 
 ```
 Client (Swagger/Postman)
         |
         ▼
-FastAPI Backend (Routing, Validation, JWT Authentication)
+FastAPI Backend (Routes, Validation, JWT Authentication)
         |
  ┌──────┴─────────────────────────┐
  │                                 │
  ▼                                 ▼
 Master Database             Dynamic Collections
-(org metadata, users)       org_<organization_name>
+(org metadata)             org_<organization_name>
 ```
 
 ---
 
-# Project Structure
+# 📂 **Project Structure**
 
 ```
 fastapi-multitenant/
@@ -76,11 +81,11 @@ fastapi-multitenant/
 
 ---
 
-# Environment Variables
+# ⚙️ **Environment Variables**
 
-Create a `.env` file with the following values:
+Create a `.env` file:
 
-```
+```env
 MONGO_URI=mongodb://localhost:27017
 MASTER_DB=master_db
 JWT_SECRET=secret123
@@ -90,79 +95,89 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 ---
 
-# Running the Project
+# ▶️ **Running the Project**
 
-### 1. Clone the repository
+### 1️⃣ Clone the repository
+
 ```bash
 git clone <your-repo-url>
 cd fastapi-multitenant
 ```
 
-### 2. Create and activate a virtual environment
+### 2️⃣ Create and activate virtual environment
+
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### 3. Install dependencies
+### 3️⃣ Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Start the server
+### 4️⃣ Start server
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Swagger documentation is available at:  
-http://127.0.0.1:8000/docs
+Swagger UI:
+[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-# API Endpoints
+# 📌 **API Endpoints**
 
-| Method | Endpoint        | Description |
-|--------|-----------------|-------------|
-| POST   | /org/create     | Create organization and admin |
-| GET    | /org/get        | Retrieve organization data |
-| PUT    | /org/update     | Update organization details |
-| DELETE | /org/delete     | Delete an organization (JWT required) |
-| POST   | /admin/login    | Admin login and JWT generation |
-
----
-
-# Design Choices and Trade-offs
-
-### FastAPI
-Chosen for its performance, built-in validation, and auto-generated API documentation.
-
-### MongoDB
-Its flexible schema allows dynamic creation of collections per organization without migrations.  
-Suitable for multi-tenant isolation.
-
-### Multi-Tenant Strategy (Collection per organization)
-**Advantages**  
-- Strong isolation between organizations  
-- Easy onboarding and deletion  
-- Minimal shared logic  
-
-**Limitations**  
-- Large number of tenants increases the number of collections  
-- Database-per-tenant may be more scalable for very large SaaS systems  
-
-### JWT Authentication
-JWT allows stateless authentication and clean separation of tenants, keeping authorization lightweight.
+| Method | Endpoint     | Description                        |
+| ------ | ------------ | ---------------------------------- |
+| POST   | /org/create  | Create organization & admin        |
+| GET    | /org/get     | Fetch organization metadata        |
+| PUT    | /org/update  | Update organization details        |
+| DELETE | /org/delete  | Delete organization (JWT required) |
+| POST   | /admin/login | Admin login and token generation   |
 
 ---
 
-# Brief Notes
+# 🧠 **Design Choices & Trade-offs**
+
+### ⚡ FastAPI
+
+Chosen for speed, built-in validation, and clean structure.
+
+### 🗄️ MongoDB
+
+Great for flexible schemas and dynamic collection creation.
+
+### 🏢 Multi-Tenant Model (Collection-per-organization)
+
+**Pros:**
+
+* Strong isolation
+* Simple deletion and onboarding
+* No schema conflicts
+
+**Cons:**
+
+* Many organizations → many collections
+* Database-per-tenant model scales even better for large SaaS products
+
+### 🔐 JWT Authentication
+
+Provides stateless, secure, tenant-aware access control.
+
+---
+
+# 📝 **Brief Notes**
 
 ```
-The project uses a master database to store global metadata such as organization information and admin accounts.  
-Each organization receives an isolated MongoDB collection. This approach keeps data separated and simplifies deletion and onboarding.  
-FastAPI was selected for its speed and clear structure, while JWT ensures secure authentication for tenant-specific actions.  
-The architecture is suitable for small to medium multi-tenant systems and can be extended further if needed.
+The system uses a master database for storing organization metadata and admin accounts. 
+Each organization gets its own database collection, which keeps tenant data isolated and simplifies maintenance. 
+FastAPI enables fast development and clear API structure, while JWT ensures secure access control.
+This architecture works efficiently for small to medium multi-tenant systems and can be extended for larger deployments.
 ```
 
+---
 
 
