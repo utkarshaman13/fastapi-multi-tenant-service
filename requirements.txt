@@ -4,3 +4,5 @@ motor
 passlib[bcrypt]
 pyjwt
 python-dotenv
+email-validator
+
